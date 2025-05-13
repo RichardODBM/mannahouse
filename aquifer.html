@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <title>manahouse Library</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>manahouse Library</h1>
+
+    <label for="language">Language:</label>
+    <select id="language"></select>
+
+    <label for="bible">Bible:</label>
+    <select id="bible"></select>
+
+    <label for="book">Book:</label>
+    <select id="book"></select>
+
+    <label for="chapter">Chapter:</label>
+    <input type="number" id="chapter" value="1" min="1">
+
+    <label for="verse">Verse:</label>
+    <input type="number" id="verse" value="1" min="1">
+
+    <button id="searchBtn">Search Resources</button>
+
+    <div id="resources"></div>
+    <div id="viewer"></div>
+
+    <script>
+      const phpBaseUrl = 'https://wondercraft.co.za/ODBM/php_files/';
+
+      document.getElementById('searchBtn').addEventListener('click', () => {
+        const language = document.getElementById('language').value;
+        const bible = document.getElementById('bible').value;
+        const book = document.getElementById('book').value;
+        const chapter = document.getElementById('chapter').value;
+        const verse = document.getElementById('verse').value;
+
+        const url = `${phpBaseUrl}getResources.php?lang=${language}&bible=${bible}&book=${book}&chapter=${chapter}&verse=${verse}`;
+
+        fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            document.getElementById('resources').innerHTML = html;
+          })
+          .catch(err => {
+            document.getElementById('resources').innerHTML = `<p style="color:red;">Error loading resources.</p>`;
+            console.error(err);
+          });
+      });
+    </script>
+</body>
+</html>
