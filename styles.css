@@ -1,118 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Sans+Narrow:wght@400;700&display=swap');
+
 body {
   font-family: 'PT Sans', Arial, sans-serif;
-  background-color: #f5f5f5;
+  background: #F0F0F0;
+  color: #222222;
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
+  align-items: flex-start;
   min-height: 100vh;
 }
 
-header {
-  background-color: #1E375F;
-  color: white;
+.container {
+  background: #FFFFFF;
+  border-radius: 8px;
   width: 100%;
-  padding: 1rem;
-  text-align: center;
+  max-width: 700px;
+  margin: 2em;
+  padding: 2em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
   font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
-  margin: 0;
+  color: #1E375F;
   font-size: 2rem;
+  margin-top: 0;
 }
 
-.container {
-  margin-top: 2rem;
-  max-width: 800px;
-  width: 90%;
+.search-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1em;
 }
 
-.tool-link {
-  background-color: white;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  text-decoration: none;
-  color: #1E375F;
-  display: block;
-  transition: background 0.2s;
-}
-
-.tool-link:hover {
-  background-color: #eef3fa;
-}
-
-.tool-link h2 {
-  margin: 0 0 0.5rem 0;
-  font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
-}
-
-.tool-link p {
-  margin: 0;
-  font-size: 0.95rem;
-  color: #333;
-}
-
-/* Form elements for audio site are here */
-
-/* Layout row for inputs */
-.row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-/* Labels and inputs */
-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: #1E375F;
-}
-
-select,
-input[type="number"] {
-  width: 100%;
-  padding: 0.5rem;
-  font-family: inherit;
-  font-size: 1rem;
+.search-row select,
+.search-row input {
+  font-family: 'PT Sans', Arial, sans-serif;
+  padding: 0.5em;
   border: 1px solid #ccc;
   border-radius: 4px;
+  margin-right: 0.5em;
 }
 
-/* Button styling */
+.search-row input[type='text'] {
+  flex: 1;
+}
+
 button {
-  background-color: #FAB432;
-  color: #1E375F;
   font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
+  background: #FAB432;
+  color: #58595B;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75em 1.5em;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
   transition: background 0.2s;
+  margin-right: 0.5em;
 }
 
 button:hover {
-  background-color: #e0a12e;
+  background: #E0A12E;
 }
 
-/* Output area */
-#output {
-  margin-top: 2rem;
-  padding: 1rem;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  font-size: 0.95rem;
+#results {
+  margin-top: 1.5em;
 }
 
-audio {
-  display: block;
-  margin-top: 0.5rem;
+.result-item {
+  background: #FFFFFF;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  padding: 1em;
+  margin-bottom: 1em;
+}
+
+.result-item a.title {
+  font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
+  font-size: 1.125rem;
+  color: #1E375F;
+  text-decoration: none;
+}
+
+.result-item a.title:hover {
+  text-decoration: underline;
+}
+
+.result-item small {
+  font-family: 'PT Sans', Arial, sans-serif;
+  color: #58595B;
+}
+
+#endorsementNote {
+  font-size: 0.875rem;
+  color: #555;
+  margin-top: 1em;
+}
+
+#navButtons {
+  margin-top: 1em;
+  display: none;
+  justify-content: space-between;
 }
