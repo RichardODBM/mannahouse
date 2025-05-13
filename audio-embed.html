@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Audio Bible Tool – Manna Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Audio Bible Tool</h1>
+    <p>Select a language, Bible, and passage to generate audio embed code.</p>
+  </header>
+
+  <main class="container">
+    <div class="row">
+      <label for="language">Language:</label>
+      <select id="language"></select>
+
+      <label for="bible">Bible:</label>
+      <select id="bible"></select>
+
+      <label for="book">Book:</label>
+      <select id="book"></select>
+
+      <label for="chapter">Chapter:</label>
+      <input type="number" id="chapter" min="1" max="150" value="1" />
+    </div>
+
+    <button id="generate">Generate Audio Embed</button>
+
+    <div id="output"></div>
+  </main>
+
+  <script>
+    const BASE_URL = 'https://wondercraft.co.za/ODBM/php_files/api.php?endpoint';
+
+    async function fetchData(endpoint) {
+      const res = await fetch(`${BASE_URL}=${endpoint}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    async function fetchDataWithParams(endpoint, params) {
+      const query = new URLSearchParams(params).toString();
+      const res = await fetch(`${BASE_URL}=${endpoint}&${query}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    async function fetchLanguages() {
+      try {
+        const data = await fetchData('languages');
+        const langSelect = document.getElementById('language');
+        langSelect.innerHTML = '';
+
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'Select';
+        langSelect.appendChild(defaultOpt);
+
+        data.forEach(l => {
+          const opt = document.createElement('option');
+          opt.value = l.code;
+          opt.textContent = `${l.englishDisplay} (${l.code})`;
+          langSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Error fetching languages:', err);
+        alert('Failed to load languages.');
+      }
+    }
+
+    async function fetchBibles(languageCode) {
+      try {
+        const data = await fetchDataWithParams('bibles', { LanguageCode: languageCode, HasAudio: true });
+        const bibleSelect = document.getElementById('bible');
+        bibleSelect.innerHTML = '';
+
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'Select';
+        bibleSelect.appendChild(defaultOpt);
+
+        if (data.length === 0) {
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = 'No Bibles Found';
+          bibleSelect.appendChild(opt);
+          return;
+        }
+
+        data.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = `${b.name} (${b.abbreviation})`;
+          bibleSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Error fetching Bibles:', err);
+        alert('Failed to load Bibles.');
+      }
+    }
+
+    async function fetchBooks() {
+      try {
+        const data = await fetchData('bibles/books');
+        const bookSelect = document.getElementById('book');
+        bookSelect.innerHTML = '';
+
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'Select';
+        bookSelect.appendChild(defaultOpt);
+
+        data.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.code;
+          opt.textContent = `${b.name} (${b.code})`;
+          bookSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Error fetching books:', err);
+        alert('Failed to load books.');
+      }
+    }
+
+    document.getElementById('language').addEventListener('change', e => {
+      const languageCode = e.target.value;
+      if (languageCode) {
+        fetchBibles(languageCode);
+      } else {
+        document.getElementById('bible').innerHTML = '<option value="">Select</option>';
+        document.getElementById('book').innerHTML = '<option value="">Select</option>';
+      }
+    });
+
+    document.getElementById('bible').addEventListener('change', e => {
+      const bibleId = e.target.value;
+      if (bibleId) {
+        fetchBooks();
+      } else {
+        document.getElementById('book').innerHTML = '<option value="">Select</option>';
+      }
+    });
+
+    document.getElementById('generate').addEventListener('click', async () => {
+      const bibleId = document.getElementById('bible').value;
+      const bookCode = document.getElementById('book').value;
+      const chapterNum = document.getElementById('chapter').value;
+      const output = document.getElementById('output');
+      output.innerHTML = 'Loading audio...';
+
+      if (!bibleId || !bookCode || !chapterNum) {
+        output.innerHTML = 'Please select Bible, book, and chapter.';
+        return;
+      }
+
+      try {
+        const params = {
+          BookCode: bookCode,
+          StartChapter: chapterNum,
+          EndChapter: chapterNum,
+          ShouldReturnAudioData: true
+        };
+        const data = await fetchDataWithParams(`bibles/${bibleId}/texts`, params);
+        const chapterData = data.chapters?.[0];
+        const audioUrl = chapterData?.audio?.mp3?.url;
+        if (audioUrl) {
+          output.innerHTML = `
+            <h3>Audio Embed</h3>
+            <audio controls src="${audioUrl}"></audio>
+            <p>Embed code:</p>
+            <pre>&lt;audio controls src="${audioUrl}"&gt;&lt;/audio&gt;</pre>
+          `;
+        } else {
+          output.innerHTML = 'No audio available for this chapter.';
+        }
+      } catch (err) {
+        console.error('Error fetching audio:', err);
+        output.innerHTML = 'Failed to fetch audio.';
+      }
+    });
+
+    fetchLanguages();
+  </script>
+</body>
+</html>
