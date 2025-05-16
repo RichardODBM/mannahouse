@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch(`${API_BASE}languages`)
     .then(res => res.json())
     .then(data => {
+      console.log("LANGUAGES:", data); // 👈 Add this for debugging
       const placeholder = document.createElement('option');
       placeholder.value = '';
       placeholder.textContent = 'None';
