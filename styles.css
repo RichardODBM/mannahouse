@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Sans+Narrow:wght@400;700&display=swap');
 
+/* ===== General Page Layout ===== */
 body {
   font-family: 'PT Sans', Arial, sans-serif;
   background: #F0F0F0;
@@ -12,6 +13,7 @@ body {
   min-height: 100vh;
 }
 
+/* ===== Container for Each Tool Page ===== */
 .container {
   background: #FFFFFF;
   border-radius: 8px;
@@ -22,6 +24,7 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== Page Titles ===== */
 h1 {
   font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
   color: #1E375F;
@@ -29,6 +32,38 @@ h1 {
   margin-top: 0;
 }
 
+/* ===== Reusable Header and Nav (menu.html) ===== */
+.site-header {
+  background-color: #1E375F;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.site-header h1 {
+  font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
+  font-size: 1.75rem;
+  margin: 0;
+}
+
+.site-header p {
+  margin: 0.25rem 0 1rem;
+  font-size: 0.95rem;
+}
+
+.site-header nav a {
+  color: white;
+  margin: 0 1rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.site-header nav a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Crossref Tool Specific ===== */
 .search-row {
   display: flex;
   align-items: center;
@@ -65,6 +100,7 @@ button:hover {
   background: #E0A12E;
 }
 
+/* ===== Crossref Search Results ===== */
 #results {
   margin-top: 1.5em;
 }
