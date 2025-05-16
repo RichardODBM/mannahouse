@@ -11,28 +11,24 @@
   <div id="menu"></div>
 
   <main class="container">
-    <a class="tool-link" href="audio-embed.html">
-      <h2>Audio Embed Tool</h2>
-      <p>Generate Bible audio embed codes based on language, book, and chapter.</p>
-    </a>
-  
-    <a class="tool-link" href="aquifer.html">
-      <h2>Aquifer Resource Browser</h2>
-      <p>Explore multimedia resources (text, image, audio, video) by Scripture reference.</p>
-    </a>
-  
-    <a class="tool-link" href="crossref.html">
-      <h2>Open Access Search</h2>
-      <p>Search Crossref for Creative Commons academic resources by author, title, or topic.</p>
-    </a>
+    <h1>Welcome to Manna Hub</h1>
+    <p>
+      Just as manna was given freely each day to nourish and sustain, this hub offers a daily supply of Bible resources for you and your community. All materials here are provided without cost, so everyone can access God’s Word and tools for growth.
+    </p>
+    <p>
+      ODBM does not own these resources. They are gathered from around the world, made available by their creators, and shared freely for your use.
+    </p>
+    <p>
+      May you find spiritual nourishment here, just as the manna in the wilderness fed God’s people each morning.
+    </p>
   </main>
   <script>
-  fetch('menu.html')
-    .then(response => response.text())
-    .then(html => {
-      document.getElementById('menu').innerHTML = html;
-    });
-</script>
-<div id="footer"></div>
+    fetch('menu.html')
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('menu').innerHTML = html;
+      });
+  </script>
+  <div id="footer"></div>
 </body>
 </html>
