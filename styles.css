@@ -157,6 +157,7 @@ button:hover {
   margin-top: 1em;
   display: none;
   justify-content: space-between;
+  gap: 1em;
 }
 
 audio {
