@@ -99,40 +99,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (Array.isArray(content)) {
           const firstItem = content[0];
-
+        
           if (type === 'Text' && firstItem.tiptap) {
             const html = renderTiptap(firstItem.tiptap);
             viewerDiv.innerHTML += html;
+        
           } else if (type === 'Audio') {
             const audioSteps = [];
-          
-            // Prioritise MP3 steps first, fallback to WEBM
+        
             if (Array.isArray(content?.mp3?.steps)) {
               audioSteps.push(...content.mp3.steps);
             } else if (Array.isArray(content?.webm?.steps)) {
               audioSteps.push(...content.webm.steps);
             }
-          
+        
             if (audioSteps.length > 0) {
               audioSteps.forEach(step => {
                 const stepLabel = document.createElement('div');
                 stepLabel.textContent = `Part ${step.stepNumber}`;
                 stepLabel.style.fontWeight = 'bold';
                 stepLabel.style.marginTop = '1em';
-          
+        
                 const player = document.createElement('audio');
                 player.controls = true;
                 player.src = step.url;
-          
+        
                 viewerDiv.appendChild(stepLabel);
                 viewerDiv.appendChild(player);
               });
             } else {
               viewerDiv.innerHTML += `<div style="color:red;">No playable audio found.</div>`;
             }
-          }
+        
           } else if (type === 'Image' && firstItem.url) {
             viewerDiv.innerHTML += `<img src="${firstItem.url}" style="max-width:100%;">`;
+        
           } else if (type === 'Video') {
             const videoUrl = firstItem.webm || firstItem.mp4 || firstItem.url;
             if (videoUrl) {
@@ -140,8 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
               viewerDiv.innerHTML += `<div style="color:red;">No video available.</div>`;
             }
+        
           } else if (firstItem.url && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(firstItem.url)) {
             viewerDiv.innerHTML += `<img src="${firstItem.url}" style="max-width:100%;">`;
+        
           } else {
             viewerDiv.innerHTML += `<pre>${JSON.stringify(firstItem, null, 2)}</pre>`;
           }
