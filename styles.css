@@ -165,6 +165,21 @@ audio {
   margin-bottom: 1em;
 }
 
+/* ===== CrossRef Nav buttons ===== */
+#navButtons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin: 24px auto;
+}
+#resultsCounter {
+  min-width: 100px;
+  text-align: center;
+}
+
+
 /* ===== Responsive Adjustments ===== */
 @media (max-width: 800px) {
   .container {
