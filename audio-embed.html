@@ -181,5 +181,15 @@
 
     fetchLanguages();
   </script>
+  <script>
+    // Dynamically load the header/menu
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('header').innerHTML = html;
+        });
+    });
+  </script>  
 </body>
 </html>
