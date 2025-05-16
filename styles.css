@@ -8,8 +8,8 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column; /* 🆕 stack header + content vertically */
+  align-items: center;
   min-height: 100vh;
 }
 
@@ -36,9 +36,10 @@ h1 {
 .site-header {
   background-color: #1E375F;
   color: white;
-  padding: 1rem;
+  width: 100%;                  /* 🆕 full-width banner */
+  padding: 1rem 2rem;
   text-align: center;
-  margin-bottom: 2rem;
+  box-sizing: border-box;       /* ensures padding doesn't overflow */
 }
 
 .site-header h1 {
