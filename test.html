@@ -1,1 +1,146 @@
+<script>
+  // Load the menu before the rest of the scripts
+  document.addEventListener('DOMContentLoaded', function () {
+    fetch('menu.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('menu').innerHTML = html;
+      })
+      .catch(() => {
+        document.getElementById('menu').innerHTML = "<p style='color:red'>Menu could not be loaded.</p>";
+      });
 
+    // --- Main Search Script ---
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({length: 50}, (_, i) => currentYear - i);
+
+    function createSearchRow(idx) {
+      const row = document.createElement('div'); row.className = 'search-row';
+      const sel = document.createElement('select'); sel.id = `field${idx}`;
+      sel.innerHTML = `
+        <option value="query.title">Title contains</option>
+        <option value="query.description">Summary contains</option>
+        <option value="query.author">Author name</option>
+        <option value="filter.from-pub-date">Published year</option>
+      `;
+      const input = document.createElement('input'); input.type = 'text'; input.id = `term${idx}`; input.placeholder = 'Enter text';
+      const yearSel = document.createElement('select'); yearSel.id = `year${idx}`;
+      yearSel.innerHTML = '<option value="">Any</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+      yearSel.style.display = 'none';
+      sel.addEventListener('change', () => {
+        if (sel.value === 'filter.from-pub-date') { input.style.display = 'none'; yearSel.style.display = 'inline-block'; }
+        else { input.style.display = 'inline-block'; yearSel.style.display = 'none'; }
+      });
+      row.appendChild(sel); row.appendChild(input); row.appendChild(yearSel);
+      return row;
+    }
+    // Insert search fields
+    [1,2,3].forEach(i => document.getElementById('searchFields').appendChild(createSearchRow(i)));
+
+    // <<< ADDED: Licence URL to type mapping
+    const LICENSE_TYPES = {
+      "https://creativecommons.org/licenses/by/4.0/": "CC BY",
+      "https://creativecommons.org/licenses/by-sa/4.0/": "CC BY-SA",
+      "https://creativecommons.org/publicdomain/zero/1.0/": "CC0"
+    }; // <<<
+
+    let currentOffset = 0;
+    let lastInputs = null;
+    async function fetchResults(offset) {
+      const inputs = lastInputs ? lastInputs : [1,2,3].map(i=>({
+        field: document.getElementById(`field${i}`).value,
+        term: document.getElementById(`term${i}`).value.trim(),
+        year: document.getElementById(`year${i}`).value
+      }));
+      lastInputs = inputs;
+
+      // <<< UPDATED: Multiple licence URLs for remix-friendly licences
+      const baseFilters = [
+        'has-license:1',
+        'has-full-text:1',
+        'license.url:https://creativecommons.org/licenses/by/4.0/',
+        'license.url:https://creativecommons.org/licenses/by-sa/4.0/',
+        'license.url:https://creativecommons.org/publicdomain/zero/1.0/'
+      ];
+      // <<<
+
+      const proxy = 'https://corsproxy.io/?'; 
+      const base = 'https://api.crossref.org/works';
+      const resultsDiv = document.getElementById('results');
+      const avail = inputs.map((i,idx)=>(i.field==='filter.from-pub-date'?i.year:i.term)?idx:-1).filter(i=>i!==-1);
+      if(!avail.length){ resultsDiv.innerText = 'Enter at least one criterion.'; document.getElementById('navButtons').style.display='none'; return; }
+      let sets=[];
+      if(avail.length===3) sets=[[0,1,2],[0,1],[0,2],[1,2],[0],[1],[2]];
+      else if(avail.length===2) sets=[[avail[0],avail[1]],[avail[0]],[avail[1]]];
+      else sets=[[avail[0]]];
+      resultsDiv.innerHTML='Loading...';
+      for(const set of sets){
+        let fs=[...baseFilters], params=[];
+        set.forEach(idx=>{
+          const i=inputs[idx];
+          if(i.field==='filter.from-pub-date'){ fs.push(`from-pub-date:${i.year}`); fs.push(`until-pub-date:${i.year}`); }
+          else params.push(`${encodeURIComponent(i.field)}=${encodeURIComponent(i.term)}`);
+        });
+        if(!params.length) continue;
+        params.push(`filter=${fs.join(',')}`); params.push('select=DOI,title,link,license'); params.push('rows=10'); params.push(`offset=${offset}`); // <<< 'license' added to select
+        const url = `${proxy}${base}?${params.join('&')}`;
+        try{
+          const response = await fetch(url);
+          if(!response.ok) throw new Error('Network error');
+          const data = await response.json(); 
+          const items = data.message.items;
+          if(items?.length){
+            resultsDiv.innerHTML='';
+            // <<< UPDATED: Append licence tag to title
+            items.forEach(item => {
+              const title = item.title?.[0] || '(No title)';
+              const doi = `https://doi.org/${item.DOI}`;
+              const ft = item.link?.[0]?.URL;
+
+              // Default to blank if no matching licence
+              let licenseLabel = '';
+              if (item.license && item.license.length) {
+                // Try to match to one of our three
+                const licenseUrl = item.license[0].URL.replace(/\/+$/, ''); // Remove trailing slash
+                for (const [url, label] of Object.entries(LICENSE_TYPES)) {
+                  if (licenseUrl === url.replace(/\/+$/, '')) {
+                    licenseLabel = ` [${label}]`;
+                    break;
+                  }
+                }
+              }
+
+              const div = document.createElement('div'); div.className = 'result-item';
+              div.innerHTML = `<a class="title" href="${doi}" target="_blank">${title}${licenseLabel}</a>` +
+                (ft ? ` <small>(<a href="${ft}" target="_blank">Full text</a>)</small>` : '');
+              resultsDiv.appendChild(div);
+            });
+            // <<<
+            const nav = document.getElementById('navButtons'); nav.style.display = 'flex';
+            document.getElementById('prevBtn').disabled = offset < 10;
+            document.getElementById('nextBtn').disabled = items.length < 10;
+            return;
+          }
+        } catch(e) { 
+          resultsDiv.innerText = 'Error fetching data.'; 
+          document.getElementById('navButtons').style.display='none';
+          return; 
+        }
+      }
+      resultsDiv.innerText = 'No results found.';
+      const nav = document.getElementById('navButtons'); nav.style.display = 'flex';
+      document.getElementById('prevBtn').disabled = offset < 10;
+      document.getElementById('nextBtn').disabled = true;
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', ()=>{ 
+      currentOffset=0; lastInputs=null; document.getElementById('navButtons').style.display='none'; fetchResults(0); 
+    });
+    document.getElementById('prevBtn').addEventListener('click', ()=>{ 
+      currentOffset=Math.max(0,currentOffset-10); fetchResults(currentOffset); 
+    });
+    document.getElementById('nextBtn').addEventListener('click', ()=>{ 
+      currentOffset+=10; fetchResults(currentOffset); 
+    });
+  });
+</script>
