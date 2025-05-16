@@ -8,18 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const resourcesDiv = document.getElementById('resources');
   const viewerDiv = document.getElementById('viewer');
 
-  // Load languages
+  // --- Helper to set prompt on a select ---
+  function setPrompt(selectElem, promptText) {
+    selectElem.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = promptText;
+    opt.disabled = true;
+    opt.selected = true;
+    selectElem.appendChild(opt);
+  }
+
+  // --- Load languages ---
   fetch(`${API_BASE}languages`)
     .then(res => res.json())
     .then(data => {
-      console.log("LANGUAGES:", data); // 👈 Add this for debugging
-      const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = 'None';
-      placeholder.disabled = true;
-      placeholder.selected = true;
-      languageSel.appendChild(placeholder);
-
+      setPrompt(languageSel, '--- Select language ---');
       data.forEach(lang => {
         const opt = document.createElement('option');
         opt.value = lang.code;
@@ -28,13 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-  // Load bibles when language is selected
+  // --- Load bibles when language is selected ---
   languageSel.addEventListener('change', () => {
-    bibleSel.innerHTML = '<option>Loading...</option>';
+    setPrompt(bibleSel, '--- Select Bible ---');
     fetch(`${API_BASE}bibles&LanguageCode=${languageSel.value}`)
       .then(res => res.json())
       .then(data => {
-        bibleSel.innerHTML = '';
+        setPrompt(bibleSel, '--- Select Bible ---');
         data.forEach(bible => {
           const opt = document.createElement('option');
           opt.value = bible.abbreviation;
@@ -42,15 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
           bibleSel.appendChild(opt);
         });
       });
+    // Also reset books dropdown
+    setPrompt(bookSel, '--- Select Book ---');
   });
 
-  // Load books when bible is selected
+  // --- Load books when bible is selected ---
   bibleSel.addEventListener('change', () => {
-    bookSel.innerHTML = '<option>Loading...</option>';
+    setPrompt(bookSel, '--- Select Book ---');
     fetch(`${API_BASE}bibles/books`)
       .then(res => res.json())
       .then(data => {
-        bookSel.innerHTML = '';
+        setPrompt(bookSel, '--- Select Book ---');
         data.forEach(book => {
           const opt = document.createElement('option');
           opt.value = book.code;
