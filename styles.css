@@ -8,61 +8,77 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column; /* 🆕 stack header + content vertically */
-  align-items: center;
+  flex-direction: column; /* stack header + content vertically */
   min-height: 100vh;
 }
 
-/* ===== Container for Each Tool Page ===== */
-.container {
-  background: #FFFFFF;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 700px;
-  margin: 2em;
-  padding: 2em;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* ===== Site Header ===== */
+.site-header {
+  background-color: #23375f;
+  color: #fff;
+  width: 100vw;
+  padding: 2.5em 0 1em 0;
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
-/* ===== Page Titles ===== */
+.site-header h1 {
+  font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
+  font-size: 2.5em;
+  margin: 0 0 0.3em 0;
+  letter-spacing: 1px;
+}
+
+.site-header p {
+  margin: 0 0 1.3em 0;
+  font-size: 1.1em;
+}
+
+.site-header nav {
+  display: flex;
+  justify-content: center;
+  gap: 2em;
+  flex-wrap: wrap;
+  margin-top: 0.5em;
+}
+
+.site-header nav a {
+  color: #fff;
+  text-decoration: none;
+  font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
+  font-size: 1.3em;
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  font-weight: 600;
+  transition: text-decoration 0.15s;
+}
+
+.site-header nav a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Main Container for Tool Pages ===== */
+.container {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 700px;
+  margin: 2em auto;
+  padding: 2.5em 2em 2em 2em;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 h1 {
   font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
   color: #1E375F;
   font-size: 2rem;
   margin-top: 0;
-}
-
-/* ===== Reusable Header and Nav (menu.html) ===== */
-.site-header {
-  background-color: #1E375F;
-  color: white;
-  width: 100vw;            /* Force full screen width */
-  padding: 1rem 2rem;
-  text-align: center;
-  box-sizing: border-box;
-  flex-shrink: 0;          /* Prevent header from shrinking */
-}
-
-.site-header h1 {
-  font-family: 'PT Sans Narrow', Arial Narrow, sans-serif;
-  font-size: 1.75rem;
-  margin: 0;
-}
-
-.site-header p {
-  margin: 0.25rem 0 1rem;
-  font-size: 0.95rem;
-}
-
-.site-header nav a {
-  color: white;
-  margin: 0 1rem;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.site-header nav a:hover {
-  text-decoration: underline;
 }
 
 /* ===== Crossref Tool Specific ===== */
@@ -108,7 +124,7 @@ button:hover {
 }
 
 .result-item {
-  background: #FFFFFF;
+  background: #fff;
   border: 1px solid #e1e1e1;
   border-radius: 4px;
   padding: 1em;
@@ -146,4 +162,18 @@ button:hover {
 audio {
   width: 100%;
   margin-bottom: 1em;
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 800px) {
+  .container {
+    margin: 1em;
+    padding: 1.5em;
+  }
+  .site-header {
+    padding: 2em 0 1em 0;
+  }
+  .site-header nav {
+    gap: 1em;
+  }
 }
