@@ -3,24 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Crossref Open Access Search</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Sans+Narrow:wght@400;700&display=swap');
-    body { font-family: 'PT Sans', Arial, sans-serif; background: #F0F0F0; color: #222222; margin: 0; padding: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
-    .container { background: #FFFFFF; border-radius: 8px; width: 100%; max-width: 700px; margin: 2em; padding: 2em; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-    h1 { font-family: 'PT Sans Narrow', Arial Narrow, sans-serif; color: #1E375F; font-size: 2rem; margin-top: 0; }
-    .search-row { display: flex; align-items: center; margin-bottom: 1em; }
-    .search-row select, .search-row input { font-family: 'PT Sans', Arial, sans-serif; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; margin-right: 0.5em; }
-    .search-row input[type='text'] { flex: 1; }
-    button { font-family: 'PT Sans Narrow', Arial Narrow, sans-serif; background: #FAB432; color: #58595B; border: none; padding: 0.75em 1.5em; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background 0.2s; margin-right: 0.5em; }
-    button:hover { background: #E0A12E; }
-    #results { margin-top: 1.5em; }
-    .result-item { background: #FFFFFF; border: 1px solid #e1e1e1; border-radius: 4px; padding: 1em; margin-bottom: 1em; }
-    .result-item a.title { font-family: 'PT Sans Narrow', Arial Narrow, sans-serif; font-size: 1.125rem; color: #1E375F; text-decoration: none; }
-    .result-item a.title:hover { text-decoration: underline; }
-    .result-item small { font-family: 'PT Sans', Arial, sans-serif; color: #58595B; }
-    #endorsementNote { font-size: 0.875rem; color: #555; margin-top: 1em; }
-    #navButtons { margin-top: 1em; display: none; justify-content: space-between; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="menu"></div>  
@@ -148,6 +131,16 @@
       });
     });
   </script>
+  <script>
+    // Dynamically load the header/menu
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('header').innerHTML = html;
+        });
+    });
+  </script>  
   <script src="aquifer.js"></script>
 </body>
 </html>
