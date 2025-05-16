@@ -12,8 +12,9 @@
     <div id="searchFields"></div>
     <button id="searchBtn">Search</button>
     <div id="results"></div>
-    <div id="navButtons">
+    <div id="navButtons" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
       <button id="prevBtn">Previous 10</button>
+      <span id="resultsCounter" style="flex: none; min-width: 100px; text-align: center;">0 – 0 of 0</span>
       <button id="nextBtn">Next 10</button>
     </div>
     <p id="endorsementNote">Note: ODBM does not necessarily endorse the resources listed.</p>
@@ -65,95 +66,106 @@
         "https://creativecommons.org/publicdomain/zero/1.0/": "CC0"
       }; // <<<
   
-      let currentOffset = 0;
-      let lastInputs = null;
-      async function fetchResults(offset) {
-        const inputs = lastInputs ? lastInputs : [1,2,3].map(i=>({
-          field: document.getElementById(`field${i}`).value,
-          term: document.getElementById(`term${i}`).value.trim(),
-          year: document.getElementById(`year${i}`).value
-        }));
-        lastInputs = inputs;
-  
-        // <<< UPDATED: Multiple licence URLs for remix-friendly licences
-        const baseFilters = [
-          'has-license:1',
-          'has-full-text:1',
-          'license.url:https://creativecommons.org/licenses/by/4.0/',
-          'license.url:https://creativecommons.org/licenses/by-sa/4.0/',
-          'license.url:https://creativecommons.org/publicdomain/zero/1.0/'
-        ];
-        // <<<
-  
-        const proxy = 'https://corsproxy.io/?'; 
-        const base = 'https://api.crossref.org/works';
-        const resultsDiv = document.getElementById('results');
-        const avail = inputs.map((i,idx)=>(i.field==='filter.from-pub-date'?i.year:i.term)?idx:-1).filter(i=>i!==-1);
-        if(!avail.length){ resultsDiv.innerText = 'Enter at least one criterion.'; document.getElementById('navButtons').style.display='none'; return; }
-        let sets=[];
-        if(avail.length===3) sets=[[0,1,2],[0,1],[0,2],[1,2],[0],[1],[2]];
-        else if(avail.length===2) sets=[[avail[0],avail[1]],[avail[0]],[avail[1]]];
-        else sets=[[avail[0]]];
-        resultsDiv.innerHTML='Loading...';
-        for(const set of sets){
-          let fs=[...baseFilters], params=[];
-          set.forEach(idx=>{
-            const i=inputs[idx];
-            if(i.field==='filter.from-pub-date'){ fs.push(`from-pub-date:${i.year}`); fs.push(`until-pub-date:${i.year}`); }
-            else params.push(`${encodeURIComponent(i.field)}=${encodeURIComponent(i.term)}`);
-          });
-          if(!params.length) continue;
-          params.push(`filter=${fs.join(',')}`); params.push('select=DOI,title,link,license'); params.push('rows=10'); params.push(`offset=${offset}`); // <<< 'license' added to select
-          const url = `${proxy}${base}?${params.join('&')}`;
-          try{
-            const response = await fetch(url);
-            if(!response.ok) throw new Error('Network error');
-            const data = await response.json(); 
-            const items = data.message.items;
-            if(items?.length){
-              resultsDiv.innerHTML='';
-              // <<< UPDATED: Append licence tag to title
-              items.forEach(item => {
-                const title = item.title?.[0] || '(No title)';
-                const doi = `https://doi.org/${item.DOI}`;
-                const ft = item.link?.[0]?.URL;
-  
-                // Default to blank if no matching licence
-                let licenseLabel = '';
-                if (item.license && item.license.length) {
-                  // Try to match to one of our three
-                  const licenseUrl = item.license[0].URL.replace(/\/+$/, ''); // Remove trailing slash
-                  for (const [url, label] of Object.entries(LICENSE_TYPES)) {
-                    if (licenseUrl === url.replace(/\/+$/, '')) {
-                      licenseLabel = ` [${label}]`;
-                      break;
+        let currentOffset = 0;
+        let lastInputs = null;
+        
+        async function fetchResults(offset) {
+          const inputs = lastInputs ? lastInputs : [1,2,3].map(i=>({
+            field: document.getElementById(`field${i}`).value,
+            term: document.getElementById(`term${i}`).value.trim(),
+            year: document.getElementById(`year${i}`).value
+          }));
+          lastInputs = inputs;
+        
+          const baseFilters = [
+            'has-license:1',
+            'has-full-text:1',
+            'license.url:https://creativecommons.org/licenses/by/4.0/',
+            'license.url:https://creativecommons.org/licenses/by-sa/4.0/',
+            'license.url:https://creativecommons.org/publicdomain/zero/1.0/'
+          ];
+        
+          const proxy = 'https://corsproxy.io/?';
+          const base = 'https://api.crossref.org/works';
+          const resultsDiv = document.getElementById('results');
+          const nav = document.getElementById('navButtons');
+          const counterSpan = document.getElementById('resultsCounter');
+        
+          const avail = inputs.map((i,idx)=>(i.field==='filter.from-pub-date'?i.year:i.term)?idx:-1).filter(i=>i!==-1);
+          if(!avail.length){
+            resultsDiv.innerText = 'Enter at least one criterion.';
+            nav.style.display = 'none';
+            counterSpan.textContent = "0 – 0 of 0";
+            return;
+          }
+          let sets=[];
+          if(avail.length===3) sets=[[0,1,2],[0,1],[0,2],[1,2],[0],[1],[2]];
+          else if(avail.length===2) sets=[[avail[0],avail[1]],[avail[0]],[avail[1]]];
+          else sets=[[avail[0]]];
+          resultsDiv.innerHTML='Loading...';
+        
+          for(const set of sets){
+            let fs=[...baseFilters], params=[];
+            set.forEach(idx=>{
+              const i=inputs[idx];
+              if(i.field==='filter.from-pub-date'){ fs.push(`from-pub-date:${i.year}`); fs.push(`until-pub-date:${i.year}`); }
+              else params.push(`${encodeURIComponent(i.field)}=${encodeURIComponent(i.term)}`);
+            });
+            if(!params.length) continue;
+            params.push(`filter=${fs.join(',')}`); params.push('select=DOI,title,link,license'); params.push('rows=10'); params.push(`offset=${offset}`);
+            const url = `${proxy}${base}?${params.join('&')}`;
+            try{
+              const response = await fetch(url);
+              if(!response.ok) throw new Error('Network error');
+              const data = await response.json();
+              const items = data.message.items;
+              const total = data.message['total-results'] || 0;
+              const start = total === 0 ? 0 : offset + 1;
+              const end = Math.min(offset + (items?.length || 0), total);
+        
+              if(items?.length){
+                resultsDiv.innerHTML='';
+                items.forEach(item => {
+                  const title = item.title?.[0] || '(No title)';
+                  const doi = `https://doi.org/${item.DOI}`;
+                  const ft = item.link?.[0]?.URL;
+        
+                  let licenseLabel = '';
+                  if (item.license && item.license.length) {
+                    const licenseUrl = item.license[0].URL.replace(/\/+$/, '');
+                    for (const [url, label] of Object.entries(LICENSE_TYPES)) {
+                      if (licenseUrl === url.replace(/\/+$/, '')) {
+                        licenseLabel = ` [${label}]`;
+                        break;
+                      }
                     }
                   }
-                }
-  
-                const div = document.createElement('div'); div.className = 'result-item';
-                div.innerHTML = `<a class="title" href="${doi}" target="_blank">${title}${licenseLabel}</a>` +
-                  (ft ? ` <small>(<a href="${ft}" target="_blank">Full text</a>)</small>` : '');
-                resultsDiv.appendChild(div);
-              });
-              // <<<
-              const nav = document.getElementById('navButtons'); nav.style.display = 'flex';
-              document.getElementById('prevBtn').disabled = offset < 10;
-              document.getElementById('nextBtn').disabled = items.length < 10;
+        
+                  const div = document.createElement('div'); div.className = 'result-item';
+                  div.innerHTML = `<a class="title" href="${doi}" target="_blank">${title}${licenseLabel}</a>` +
+                    (ft ? ` <small>(<a href="${ft}" target="_blank">Full text</a>)</small>` : '');
+                  resultsDiv.appendChild(div);
+                });
+        
+                nav.style.display = 'flex';
+                counterSpan.textContent = `${start} – ${end} of ${total}`;
+                document.getElementById('prevBtn').disabled = offset < 10;
+                document.getElementById('nextBtn').disabled = items.length < 10;
+                return;
+              }
+            } catch(e) {
+              resultsDiv.innerText = 'Error fetching data.';
+              nav.style.display = 'none';
+              counterSpan.textContent = "0 – 0 of 0";
               return;
             }
-          } catch(e) { 
-            resultsDiv.innerText = 'Error fetching data.'; 
-            document.getElementById('navButtons').style.display='none';
-            return; 
           }
-        }
-        resultsDiv.innerText = 'No results found.';
-        const nav = document.getElementById('navButtons'); nav.style.display = 'flex';
-        document.getElementById('prevBtn').disabled = offset < 10;
-        document.getElementById('nextBtn').disabled = true;
-      }
-  
+          resultsDiv.innerText = 'No results found.';
+          nav.style.display = 'flex';
+          counterSpan.textContent = "0 – 0 of 0";
+          document.getElementById('prevBtn').disabled = offset < 10;
+          document.getElementById('nextBtn').disabled = true;
+        }  
       document.getElementById('searchBtn').addEventListener('click', ()=>{ 
         currentOffset=0; lastInputs=null; document.getElementById('navButtons').style.display='none'; fetchResults(0); 
       });
