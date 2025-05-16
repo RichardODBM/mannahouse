@@ -36,10 +36,11 @@ h1 {
 .site-header {
   background-color: #1E375F;
   color: white;
-  width: 100%;                  /* 🆕 full-width banner */
+  width: 100vw;            /* Force full screen width */
   padding: 1rem 2rem;
   text-align: center;
-  box-sizing: border-box;       /* ensures padding doesn't overflow */
+  box-sizing: border-box;
+  flex-shrink: 0;          /* Prevent header from shrinking */
 }
 
 .site-header h1 {
