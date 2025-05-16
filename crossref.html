@@ -23,7 +23,8 @@
   </style>
 </head>
 <body>
-  <div class="container">
+    <div id="menu"></div>  
+    <div class="container">
     <h1>Search Open Access Works</h1>
     <div id="searchFields"></div>
     <button id="searchBtn">Search</button>
@@ -109,5 +110,13 @@
     document.getElementById('prevBtn').addEventListener('click', ()=>{ currentOffset=Math.max(0,currentOffset-10); fetchResults(currentOffset); });
     document.getElementById('nextBtn').addEventListener('click', ()=>{ currentOffset+=10; fetchResults(currentOffset); });
   </script>
+  <script>
+    fetch('menu.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('menu').innerHTML = html;
+      });
+  </script>
+  <script src="aquifer.js"></script>
 </body>
 </html>
