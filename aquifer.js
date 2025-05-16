@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const API_BASE = 'https://wondercraft.co.za/ODBM/php_files/api.php?endpoint=';
+  const API_BASE = 'https://wondercraft.co.za/ODBM/php_files/aquifer.php?endpoint=';
   const languageSel = document.getElementById('language');
   const bibleSel = document.getElementById('bible');
   const bookSel = document.getElementById('book');
