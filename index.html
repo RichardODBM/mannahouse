@@ -29,5 +29,12 @@
       <p>Search Crossref for Creative Commons academic resources by author, title, or topic.</p>
     </a>
   </main>
+  <script>
+  fetch('menu.html')
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('menu').innerHTML = html;
+    });
+</script>
 </body>
 </html>
