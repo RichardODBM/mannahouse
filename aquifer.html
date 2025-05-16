@@ -7,10 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>Aquifer Resource Browser</h1>
-    <p>Find and view multimedia Scripture resources by passage.</p>
-  </header>
+  <div id="menu"></div>
 
   <main class="container">
     <label for="language">Language:</label>
@@ -33,7 +30,13 @@
     <div id="resources"></div>
     <div id="viewer"></div>
   </main>
-
+  <script>
+    fetch('menu.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('menu').innerHTML = html;
+      });
+  </script>
   <script src="aquifer.js"></script>
 </body>
 </html>
