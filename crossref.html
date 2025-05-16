@@ -3,7 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Crossref Open Access Search</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Sans+Narrow:wght@400;700&display=swap');
+    body { font-family: 'PT Sans', Arial, sans-serif; background: #F0F0F0; color: #222222; margin: 0; padding: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+    .container { background: #FFFFFF; border-radius: 8px; width: 100%; max-width: 700px; margin: 2em; padding: 2em; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+    h1 { font-family: 'PT Sans Narrow', Arial Narrow, sans-serif; color: #1E375F; font-size: 2rem; margin-top: 0; }
+    .search-row { display: flex; align-items: center; margin-bottom: 1em; }
+    .search-row select, .search-row input { font-family: 'PT Sans', Arial, sans-serif; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; margin-right: 0.5em; }
+    .search-row input[type='text'] { flex: 1; }
+    button { font-family: 'PT Sans Narrow', Arial Narrow, sans-serif; background: #FAB432; color: #58595B; border: none; padding: 0.75em 1.5em; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background 0.2s; margin-right: 0.5em; }
+    button:hover { background: #E0A12E; }
+    #results { margin-top: 1.5em; }
+    .result-item { background: #FFFFFF; border: 1px solid #e1e1e1; border-radius: 4px; padding: 1em; margin-bottom: 1em; }
+    .result-item a.title { font-family: 'PT Sans Narrow', Arial Narrow, sans-serif; font-size: 1.125rem; color: #1E375F; text-decoration: none; }
+    .result-item a.title:hover { text-decoration: underline; }
+    .result-item small { font-family: 'PT Sans', Arial, sans-serif; color: #58595B; }
+    #endorsementNote { font-size: 0.875rem; color: #555; margin-top: 1em; }
+    #navButtons { margin-top: 1em; display: none; justify-content: space-between; }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -18,6 +35,79 @@
     <p id="endorsementNote">Note: ODBM does not necessarily endorse the resources listed.</p>
   </div>
 
-  <script src="search.js"></script>
+  <script>
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({length: 50}, (_,i)=>currentYear - i);
+    function createSearchRow(idx) {
+      const row = document.createElement('div'); row.className = 'search-row';
+      const sel = document.createElement('select'); sel.id = `field${idx}`;
+      sel.innerHTML = '<option value="query.title">Title contains</option>' +
+                      '<option value="query.description">Summary contains</option>' +
+                      '<option value="query.author">Author name</option>' +
+                      '<option value="filter.from-pub-date">Published year</option>';
+      const input = document.createElement('input'); input.type='text'; input.id=`term${idx}`; input.placeholder='Enter text';
+      const yearSel = document.createElement('select'); yearSel.id=`year${idx}`;
+      yearSel.innerHTML = '<option value="">Any</option>' + years.map(y=>`<option value="${y}">${y}</option>`).join('');
+      yearSel.style.display='none';
+      sel.addEventListener('change', ()=>{
+        if(sel.value==='filter.from-pub-date'){ input.style.display='none'; yearSel.style.display='inline-block'; }
+        else { input.style.display='inline-block'; yearSel.style.display='none'; }
+      });
+      row.appendChild(sel); row.appendChild(input); row.appendChild(yearSel);
+      return row;
+    }
+    [1,2,3].forEach(i => document.getElementById('searchFields').appendChild(createSearchRow(i)));
+
+    let currentOffset = 0;
+    let lastInputs = null;
+    async function fetchResults(offset) {
+      const inputs = lastInputs ? lastInputs : [1,2,3].map(i=>({ field: document.getElementById(`field${i}`).value, term: document.getElementById(`term${i}`).value.trim(), year: document.getElementById(`year${i}`).value }));
+      lastInputs = inputs;
+      const baseFilters = ['has-license:1','has-full-text:1','license.url:https://creativecommons.org/licenses/by/4.0/'];
+      const proxy='https://corsproxy.io/?'; const base='https://api.crossref.org/works';
+      const resultsDiv=document.getElementById('results');
+      const avail = inputs.map((i,idx)=>(i.field==='filter.from-pub-date'?i.year:i.term)?idx:-1).filter(i=>i!==-1);
+      if(!avail.length){ resultsDiv.innerText='Enter at least one criterion.'; return; }
+      let sets=[];
+      if(avail.length===3) sets=[[0,1,2],[0,1],[0,2],[1,2],[0],[1],[2]];
+      else if(avail.length===2) sets=[[avail[0],avail[1]],[avail[0]],[avail[1]]];
+      else sets=[[avail[0]]];
+      resultsDiv.innerHTML='Loading...';
+      for(const set of sets){
+        let fs=[...baseFilters], params=[];
+        set.forEach(idx=>{
+          const i=inputs[idx];
+          if(i.field==='filter.from-pub-date'){ fs.push(`from-pub-date:${i.year}`); fs.push(`until-pub-date:${i.year}`); }
+          else params.push(`${encodeURIComponent(i.field)}=${encodeURIComponent(i.term)}`);
+        });
+        if(!params.length) continue;
+        params.push(`filter=${fs.join(',')}`); params.push('select=DOI,title,link'); params.push('rows=10'); params.push(`offset=${offset}`);
+        const url = `${proxy}${base}?${params.join('&')}`;
+        try{
+          const data=await (await fetch(url)).json(); const items=data.message.items;
+          if(items?.length){
+            resultsDiv.innerHTML=''; items.forEach(item=>{
+              const title=item.title?.[0]||'(No title)'; const doi=`https://doi.org/${item.DOI}`; const ft=item.link?.[0]?.URL;
+              const div=document.createElement('div'); div.className='result-item';
+              div.innerHTML=`<a class="title" href="${doi}" target="_blank">${title}</a>`+(ft?` <small>(<a href="${ft}" target="_blank">Full text</a>)</small>`:'');
+              resultsDiv.appendChild(div);
+            });
+            const nav = document.getElementById('navButtons'); nav.style.display='flex';
+            document.getElementById('prevBtn').disabled = offset < 10;
+            document.getElementById('nextBtn').disabled = items.length < 10;
+            return;
+          }
+        }catch(e){ resultsDiv.innerText='Error fetching data.'; return; }
+      }
+      resultsDiv.innerText='No results found.';
+      const nav = document.getElementById('navButtons'); nav.style.display='flex';
+      document.getElementById('prevBtn').disabled = offset < 10;
+      document.getElementById('nextBtn').disabled = true;
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', ()=>{ currentOffset=0; lastInputs=null; document.getElementById('navButtons').style.display='none'; fetchResults(0); });
+    document.getElementById('prevBtn').addEventListener('click', ()=>{ currentOffset=Math.max(0,currentOffset-10); fetchResults(currentOffset); });
+    document.getElementById('nextBtn').addEventListener('click', ()=>{ currentOffset+=10; fetchResults(currentOffset); });
+  </script>
 </body>
 </html>
