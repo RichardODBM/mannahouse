@@ -162,7 +162,21 @@ button:hover {
 
 audio {
   width: 100%;
+  max-width: 600px; 
   margin-bottom: 1em;
+}
+
+pre, code {
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: #f9f9f9;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 1em;
+  margin-top: 0.5em;
+  overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ===== CrossRef Nav buttons ===== */
